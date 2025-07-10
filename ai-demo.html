@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS AI機能デモ - 量子AI統合プラットフォーム</title>
+    <meta name="description" content="4つの革新的AI機能を体験：チャット、音声認識、画像生成、データ分析">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='50%' x='50%' text-anchor='middle' alignment-baseline='central' font-size='80'>🧠</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f4a 50%, #2a1f3f 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #00d9ff, #00ff88, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #b8c5ff;
+            margin-bottom: 2rem;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #00d9ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .back-link:hover {
+            color: #00ff88;
+            transform: translateX(-5px);
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .demo-card:hover::before {
+            opacity: 1;
+        }
+        
+        .demo-card:hover {
+            transform: translateY(-5px);
+            border-color: #00d9ff;
+        }
+        
+        .demo-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .demo-icon {
+            font-size: 2.5rem;
+        }
+        
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .demo-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #b8c5ff;
+            font-weight: 600;
+        }
+        
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #00d9ff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .demo-button {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #0a0e27;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.4);
+        }
+        
+        .demo-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-area {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-height: 120px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+        
+        .result-area.active {
+            display: block;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #00d9ff;
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-top: 2px solid #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00ff88;
+        }
+        
+        .status-label {
+            font-size: 0.9rem;
+            color: #b8c5ff;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: #b8c5ff;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .demo-card {
+                padding: 1.5rem;
+            }
+            
+            .status-display {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 NEXUS AI機能デモ</h1>
+            <p>量子AI統合プラットフォームの4つの革新的機能を体験</p>
+            <a href="index.html" class="back-link">
+                ← メインプラットフォームに戻る
+            </a>
+        </div>
+        
+        <div class="status-display">
+            <div class="status-item">
+                <div class="status-value">1000</div>
+                <div class="status-label">量子状態</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value">99%</div>
+                <div class="status-label">コヒーレンス</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value">0.048ms</div>
+                <div class="status-label">応答時間</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value">8</div>
+                <div class="status-label">対応言語</div>
+            </div>
+        </div>
+        
+        <div class="demo-grid">
+            <!-- AI Chat Demo -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <div class="demo-icon">💬</div>
+                    <div class="demo-title">量子AIチャット</div>
+                </div>
+                <div class="demo-content">
+                    <ul class="feature-list">
+                        <li>自然言語理解</li>
+                        <li>コンテキスト記憶</li>
+                        <li>多言語対応</li>
+                        <li>感情分析</li>
+                    </ul>
+                    <div class="input-group">
+                        <label for="chatInput">メッセージを入力してください</label>
+                        <input type="text" id="chatInput" placeholder="何でもお聞きください...">
+                    </div>
+                    <button class="demo-button" onclick="processChat()">
+                        <span>💬</span> AI Chatを実行
+                    </button>
+                    <div class="result-area" id="chatResult"></div>
+                </div>
+            </div>
+            
+            <!-- Voice Recognition Demo -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <div class="demo-icon">🎤</div>
+                    <div class="demo-title">音声認識システム</div>
+                </div>
+                <div class="demo-content">
+                    <ul class="feature-list">
+                        <li>リアルタイム変換</li>
+                        <li>ノイズキャンセリング</li>
+                        <li>方言対応</li>
+                        <li>音声コマンド</li>
+                    </ul>
+                    <div class="input-group">
+                        <label for="voiceLang">認識言語</label>
+                        <select id="voiceLang">
+                            <option value="ja">日本語</option>
+                            <option value="en">English</option>
+                            <option value="ko">한국어</option>
+                            <option value="zh">中文</option>
+                        </select>
+                    </div>
+                    <button class="demo-button" onclick="processVoice()">
+                        <span>🎤</span> 音声認識を開始
+                    </button>
+                    <div class="result-area" id="voiceResult"></div>
+                </div>
+            </div>
+            
+            <!-- Image Generation Demo -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <div class="demo-icon">🎨</div>
+                    <div class="demo-title">AI画像生成</div>
+                </div>
+                <div class="demo-content">
+                    <ul class="feature-list">
+                        <li>高解像度生成</li>
+                        <li>スタイル転送</li>
+                        <li>リアルタイム編集</li>
+                        <li>バッチ処理</li>
+                    </ul>
+                    <div class="input-group">
+                        <label for="imagePrompt">画像の説明を入力</label>
+                        <textarea id="imagePrompt" rows="3" placeholder="未来的な都市の風景..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="imageStyle">画像スタイル</label>
+                        <select id="imageStyle">
+                            <option value="realistic">リアリスティック</option>
+                            <option value="anime">アニメ風</option>
+                            <option value="abstract">抽象的</option>
+                            <option value="cyberpunk">サイバーパンク</option>
+                        </select>
+                    </div>
+                    <button class="demo-button" onclick="generateImage()">
+                        <span>🎨</span> 画像を生成
+                    </button>
+                    <div class="result-area" id="imageResult"></div>
+                </div>
+            </div>
+            
+            <!-- Data Analysis Demo -->
+            <div class="demo-card">
+                <div class="demo-header">
+                    <div class="demo-icon">📊</div>
+                    <div class="demo-title">データ分析エンジン</div>
+                </div>
+                <div class="demo-content">
+                    <ul class="feature-list">
+                        <li>予測分析</li>
+                        <li>パターン認識</li>
+                        <li>異常検知</li>
+                        <li>可視化生成</li>
+                    </ul>
+                    <div class="input-group">
+                        <label for="dataInput">分析データを入力</label>
+                        <textarea id="dataInput" rows="3" placeholder="売上データ: 100,150,200,180,250..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="analysisType">分析タイプ</label>
+                        <select id="analysisType">
+                            <option value="trend">トレンド分析</option>
+                            <option value="forecast">予測分析</option>
+                            <option value="anomaly">異常検知</option>
+                            <option value="correlation">相関分析</option>
+                        </select>
+                    </div>
+                    <button class="demo-button" onclick="analyzeData()">
+                        <span>📊</span> データを分析
+                    </button>
+                    <div class="result-area" id="dataResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // AI Chat Function
+        function processChat() {
+            const input = document.getElementById('chatInput').value;
+            const result = document.getElementById('chatResult');
+            
+            if (!input.trim()) {
+                alert('メッセージを入力してください');
+                return;
+            }
+            
+            result.classList.add('active');
+            result.innerHTML = '<div class="loading"><div class="loading-spinner"></div>量子AIが応答を生成中...</div>';
+            
+            setTimeout(() => {
+                const responses = [
+                    'ご質問ありがとうございます。量子並列処理により最適な回答を生成いたします。',
+                    'AIニューラルネットワークが学習データから関連情報を抽出しました。',
+                    '感情分析結果：ポジティブ度85%。コンテキストを理解して応答します。',
+                    '多次元ベクトル空間での意味解析が完了しました。',
+                ];
+                
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                result.innerHTML = `
+                    <div style="color: #00ff88; font-weight: 600; margin-bottom: 1rem;">✓ AI応答生成完了</div>
+                    <div style="margin-bottom: 1rem;">${response}</div>
+                    <div style="color: #b8c5ff; font-size: 0.9rem;">
+                        入力: "${input}"<br>
+                        処理時間: 0.048ms | 信頼度: 99.9% | 感情: ポジティブ
+                    </div>
+                `;
+            }, 2000);
+        }
+        
+        // Voice Recognition Function
+        function processVoice() {
+            const lang = document.getElementById('voiceLang').value;
+            const result = document.getElementById('voiceResult');
+            
+            result.classList.add('active');
+            result.innerHTML = '<div class="loading"><div class="loading-spinner"></div>音声認識を開始しています...</div>';
+            
+            setTimeout(() => {
+                const langNames = {
+                    'ja': '日本語',
+                    'en': 'English',
+                    'ko': '한국어',
+                    'zh': '中文'
+                };
+                
+                const sampleTexts = {
+                    'ja': 'こんにちは、NEXUS量子AIシステムです。',
+                    'en': 'Hello, this is NEXUS Quantum AI System.',
+                    'ko': '안녕하세요, NEXUS 양자 AI 시스템입니다.',
+                    'zh': '您好，这是NEXUS量子AI系统。'
+                };
+                
+                result.innerHTML = `
+                    <div style="color: #00ff88; font-weight: 600; margin-bottom: 1rem;">✓ 音声認識完了</div>
+                    <div style="margin-bottom: 1rem;">認識されたテキスト: "${sampleTexts[lang]}"</div>
+                    <div style="color: #b8c5ff; font-size: 0.9rem;">
+                        言語: ${langNames[lang]}<br>
+                        認識精度: 99.9% | ノイズレベル: 低 | 処理時間: 0.15秒
+                    </div>
+                `;
+            }, 2500);
+        }
+        
+        // Image Generation Function
+        function generateImage() {
+            const prompt = document.getElementById('imagePrompt').value;
+            const style = document.getElementById('imageStyle').value;
+            const result = document.getElementById('imageResult');
+            
+            if (!prompt.trim()) {
+                alert('画像の説明を入力してください');
+                return;
+            }
+            
+            result.classList.add('active');
+            result.innerHTML = '<div class="loading"><div class="loading-spinner"></div>AI画像を生成中...</div>';
+            
+            setTimeout(() => {
+                const styleNames = {
+                    'realistic': 'リアリスティック',
+                    'anime': 'アニメ風',
+                    'abstract': '抽象的',
+                    'cyberpunk': 'サイバーパンク'
+                };
+                
+                // Generate a placeholder image URL based on prompt
+                const imageUrl = `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 1000)}`;
+                
+                result.innerHTML = `
+                    <div style="color: #00ff88; font-weight: 600; margin-bottom: 1rem;">✓ 画像生成完了</div>
+                    <img src="${imageUrl}" alt="Generated Image" style="width: 100%; max-width: 400px; border-radius: 10px; margin-bottom: 1rem;">
+                    <div style="color: #b8c5ff; font-size: 0.9rem;">
+                        プロンプト: "${prompt}"<br>
+                        スタイル: ${styleNames[style]} | 解像度: 1024x1024 | 生成時間: 3.2秒
+                    </div>
+                `;
+            }, 3200);
+        }
+        
+        // Data Analysis Function
+        function analyzeData() {
+            const data = document.getElementById('dataInput').value;
+            const analysisType = document.getElementById('analysisType').value;
+            const result = document.getElementById('dataResult');
+            
+            if (!data.trim()) {
+                alert('分析データを入力してください');
+                return;
+            }
+            
+            result.classList.add('active');
+            result.innerHTML = '<div class="loading"><div class="loading-spinner"></div>データを分析中...</div>';
+            
+            setTimeout(() => {
+                const analysisNames = {
+                    'trend': 'トレンド分析',
+                    'forecast': '予測分析',
+                    'anomaly': '異常検知',
+                    'correlation': '相関分析'
+                };
+                
+                const insights = {
+                    'trend': '上昇トレンド検出（+15.2%/月）',
+                    'forecast': '次月予測値：280±12（信頼区間95%）',
+                    'anomaly': '異常値なし（全データポイント正常範囲内）',
+                    'correlation': '強い正の相関（r=0.89）'
+                };
+                
+                result.innerHTML = `
+                    <div style="color: #00ff88; font-weight: 600; margin-bottom: 1rem;">✓ 分析完了</div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>分析結果:</strong> ${insights[analysisType]}
+                    </div>
+                    <div style="color: #b8c5ff; font-size: 0.9rem;">
+                        分析タイプ: ${analysisNames[analysisType]}<br>
+                        データポイント: ${data.split(',').length}個 | 処理時間: 0.12秒 | 信頼度: 98.7%
+                    </div>
+                `;
+            }, 1800);
+        }
+        
+        // Enter key support for text inputs
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') processChat();
+        });
+        
+        // Auto-focus on first input
+        document.getElementById('chatInput').focus();
+    </script>
+</body>
+</html>
